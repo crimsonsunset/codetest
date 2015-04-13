@@ -1,0 +1,134 @@
+$icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/bootstrap/";
+// bower:scss
+@import "bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
+// endbower
+
+.container {
+  height: 100%;
+}
+
+/* Space out content a bit */
+body {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.header,
+.marketing,
+.footer {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Custom page header */
+.header {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+/* Custom page footer */
+.footer {
+  padding-top: 19px;
+  color: #777;
+  border-top: 1px solid #e5e5e5;
+}
+
+.characterContainer {}
+
+#letterDD {
+  padding-bottom: 10px;
+  padding-top: 10px;
+}
+
+.choices {
+  font-size: large;
+  text-align: center;
+}
+
+.textSpans{
+  width: 100%;
+  height: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  font-size: 30px;
+  color: white;
+  letter-spacing: -1px;
+  background: rgb(0, 0, 0); /* fallback color */
+  background: rgba(0, 0, 0, 0.9);
+  padding: 10px;
+
+}
+
+.innerCont{
+
+  -webkit-filter: grayscale(80%);
+  opacity: .7;
+  text-align: center;
+  height: 200px;
+  position: relative;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url("http://i.annihil.us/u/prod/marvel/i/mg/3/20/5232158de5b16/standard_xlarge.jpg");
+}
+
+.outerTileCont {
+  padding: 10px;
+  //  border: 2px solid;
+}
+
+.innerTileCont {
+  h2 span {
+    @extend .textSpans;
+  }
+  @extend .innerCont;
+
+}
+
+.innerTileCont:hover {
+  h2 span {
+    transition: all 0.4s ease;
+    color: black;
+    background: #ffffff;
+    background: rgba(255, 255, 255, 0.83);
+    padding: 10px;
+  }
+  -webkit-filter: grayscale(0%);
+  opacity: 1;
+}
+
+.pagination {
+  float: right;
+}
+
+.footer {
+  display: table;
+  margin: 0 auto;
+  border-top: 0px solid #e5e5e5;
+}
+
+.spinnerHolder {
+  display: table;
+  margin: 0 auto;
+}
+
+
+/* Responsive: Portrait tablets and up */
+@media screen and (min-width: 768px) {
+  .container {
+    max-width: 1024px;
+  }
+
+  /* Remove the padding we set earlier */
+  .header,
+  .marketing,
+  .footer {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Space out the masthead */
+  .header {
+    margin-bottom: 30px;
+  }
+}

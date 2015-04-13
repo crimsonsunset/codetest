@@ -1,0 +1,81 @@
+html, body {
+  height: 100%;
+}
+
+.header h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+  line-height: 40px;
+  padding-bottom: 19px;
+}
+
+.comicContainer {
+  height: 100%;
+  min-height: 100%;
+  overflow: auto;
+}
+
+.textSpans{
+  width: 100%;
+  height: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  font-size: 30px;
+  color: white;
+  letter-spacing: -1px;
+  background: rgb(0, 0, 0); /* fallback color */
+  background: rgba(0, 0, 0, 0.9);
+  padding: 10px;
+
+}
+.innerCont{
+
+  -webkit-filter: grayscale(80%);
+  opacity: .7;
+  text-align: center;
+  height: 200px;
+  position: relative;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url("http://i.annihil.us/u/prod/marvel/i/mg/3/20/5232158de5b16/standard_xlarge.jpg");
+}
+
+.innerTileCont{
+  @extend .innerCont;
+  height: 324px;
+  h2 span {
+    @extend .textSpans;
+    font-size: 24px;
+  }
+
+}
+
+.innerTileCont:hover{
+  h2 span{
+    transition: all 0.4s ease;
+    color: black;
+    background: #ffffff;
+    background: rgba(255, 255, 255, 0.83);
+    padding: 10px;
+  }
+  -webkit-filter: grayscale(0%);
+  opacity: 1;
+}
+
+.noComics{
+  height: 80px;
+  h2{
+    width: 100%;
+    text-align: center;
+    height: auto;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size: 24px;
+    letter-spacing: -1px;
+    padding: 10px;
+  }
+
+}
