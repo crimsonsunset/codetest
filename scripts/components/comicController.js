@@ -6,11 +6,15 @@
 var comicController = (function () {
   var comicController = {};
   var currSpinner;
+  var characterName;
   var noImgPath = "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available";
   //will be used to populate comic labels
   var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   var characterId;
   var totalComics;
+  var gotAllComics = false;
+  //for infinite scrolling, to prevent the same call more than once
+  var processingCall = false;
   //used to populate dropdown
   var sortOptionsArr = [
     "focDate",
@@ -37,7 +41,7 @@ var comicController = (function () {
    * @param {integer} offset - The numeric amount results should be offset by
    * @param {string} orderBy - The way in which results should be ordered by. Will be populated through dropdown or by title as default
    */
-  function callAPI(offset,orderBy) {
+  function callAPI(offset, orderBy) {
 
     //sanity-check, log the ID when you call the function
     var currComic = (!characterId) ? console.err("NO CHARACTERID") : console.log("char id is: " + characterId)
@@ -46,7 +50,8 @@ var comicController = (function () {
     var useOffset = (offset) ? offset : 0;
     var useOrderBy = (orderBy) ? orderBy : "title";
 
-    console.log("Top of Comic API Call: " + useOrderBy +" -- "+ useOffset)
+    console.log("Top of Comic API Call: " + useOrderBy + " -- " + useOffset)
+    processingCall = true
     //parameters necessary to obtain the correct results
     var params = {
       limit: CALL_LIMIT,
@@ -58,28 +63,40 @@ var comicController = (function () {
     //construct fullURL
     var fullURL = APIURL + $.param(params);
 
-     return $.ajax(fullURL)
-       .done(function (data) {
+    return $.ajax(fullURL)
+        .done(function (data) {
 
-         //remove spinner from the page
-         try {
-           currSpinner.remove()
-         }
-         catch(err) {
-           $(".spinner").remove()
-         }
+          //remove spinner from the page
+          try {
+            currSpinner.remove()
+          }
+          catch (err) {
+            $(".spinner").remove()
+          }
 
-         var response = JSON.parse(data)
-         //save this to check if infinite scrolling is finished later on
-         totalComics = response.data.total;
-         (totalComics>0) ? populateComicContainer(response.data.results) : $(".comicContainer").append(NoComics())
+          var response = JSON.parse(data)
+          //save this to check if infinite scrolling is finished later on
+          totalComics = response.data.total;
+          (totalComics > 0) ? populateComicContainer(response.data.results) : $(".comicContainer").append(NoComics())
 
-      })
-      .fail(function () {
-        console.log("fail");
-      })
+        })
+        .fail(function () {
+          console.log("fail");
+        })
+        .always(function () {
+          processingCall = false;
+          //remove spinner from the page
+          try {
+            currSpinner.remove()
+          }
+          catch (err) {
+            $(".spinner").remove()
+          }
+        }
+    )
 
   }
+
   /**
    * Once API Call has returned, this function will be used to populate the page
    * @param {array} comicArr - An array of comic objects obtained from the API
@@ -96,10 +113,10 @@ var comicController = (function () {
 
 
       //if the title has parenthesis, remove unnecessary parts of the title
-      var shortenedTitle =  (currComic.title.indexOf("(") != -1) ? currComic.title.substr(0,currComic.title.indexOf("(")-1) : currComic.title;
+      var shortenedTitle = (currComic.title.indexOf("(") != -1) ? currComic.title.substr(0, currComic.title.indexOf("(") - 1) : currComic.title;
 
       //parse through the date array, utilizing the onsale date for display purposes
-      var releaseDateArr = $.grep(currComic.dates, function( a ) {
+      var releaseDateArr = $.grep(currComic.dates, function (a) {
         return (a.type == "onsaleDate")
       });
 
@@ -110,12 +127,12 @@ var comicController = (function () {
       var parsedDate = (isNaN(date.month())) ? "No Date Available" : months[date.month()] + " " + date.date() + ", " + date.year()
 
       //construct infoArr to pass into ComicTile Template
-      var infoArr = [shortenedTitle, parsedDate,"ID: " + currComic.id]
-      var issueNumber =  (currComic.issueNumber > 0 ) ? "Issue# "+currComic.issueNumber : null;
+      var infoArr = [shortenedTitle, parsedDate, "ID: " + currComic.id]
+      var issueNumber = (currComic.issueNumber > 0 ) ? "Issue# " + currComic.issueNumber : null;
       (issueNumber) ? infoArr.push(issueNumber) : $.noop();
 
       //can now use our parsed information to construct a ComicTile
-      $(".comicContainer").append(ComicTile(currComic.id, infoArr,imgPath, "."+extName ))
+      $(".comicContainer").append(ComicTile(currComic.id, infoArr, imgPath, "." + extName))
     }
 
 
@@ -135,23 +152,22 @@ var comicController = (function () {
     //})
 
 
-
     //register listener for infinite-scrolling [without jquery]
     document.getElementsByClassName("comicContainer")[0].addEventListener("scroll", function (event) {
 
-        //register listener for infinite-scrolling
-        if (event.target.scrollHeight - event.target.scrollTop <= event.srcElement.clientHeight)
-        {
-          if (OFFSET <= totalComics) {
-            console.log("Bottom of container hit, calling API for more results")
-            OFFSET+=CALL_LIMIT
-            currSpinner=createSpinner(spinnerHolder)
-            callAPI(OFFSET)
+      //register listener for infinite-scrolling
+      if (event.target.scrollHeight - event.target.scrollTop <= event.target.clientHeight && !processingCall) {
+        if (OFFSET <= totalComics) {
+          console.log("Bottom of container hit, calling API for more results")
+          OFFSET += CALL_LIMIT
+          currSpinner = createSpinner(spinnerHolder)
+          callAPI(OFFSET)
 
-          } else {
-            console.log("Got all the comics already!")
-          }
-        }else{}
+        } else {
+          console.log("Got all the comics already!")
+        }
+      } else {
+      }
     });
 
   }
@@ -164,13 +180,13 @@ var comicController = (function () {
   comicController.sortBy = function (inText, mainBtn) {
 
     mainBtn.text("Sorted By: " + inText + " ").append($('<span/>', {"class": "caret"}))
-    var sortStr =  (inText.indexOf("(") != -1) ? "-"+inText.substr(0,inText.indexOf("(")-1) : inText;
+    var sortStr = (inText.indexOf("(") != -1) ? "-" + inText.substr(0, inText.indexOf("(") - 1) : inText;
 
     //clear the comic container and reset offset
-    OFFSET=0
+    OFFSET = 0
     $(".comicContainer").empty();
-    currSpinner=createSpinner(spinnerHolder)
-    callAPI(undefined,sortStr)
+    currSpinner = createSpinner(spinnerHolder)
+    callAPI(undefined, sortStr)
 
   }
 
@@ -179,20 +195,22 @@ var comicController = (function () {
    * trickle down to populate the page
    */
   comicController.init = function () {
-    currSpinner=createSpinner(spinnerHolder)
+    currSpinner = createSpinner(spinnerHolder)
     characterId = window.location.hash.substring(1)
-    $.when(callAPI()).done(function (obj,code) {
+    //parse character name out of URL, decode it in case of spaces or special characters
+    characterName = decodeURIComponent(location.search.substring(1))
+    $("#characterName").text(characterName)
+
+    $.when(callAPI()).done(function (obj, code) {
       console.log("API Call success!");
 
       //create dropdown
-      $(".header").append(Dropdown("sortDD",sortOptionsArr,"Sorted By: Title ", comicController.sortBy))
-      //parse character name out of URL, decode it in case of spaces or special characters
-      $("#characterName").text(decodeURIComponent(location.search.substring(1)))
+      $(".header").append(Dropdown("sortDD", sortOptionsArr, "Sorted By: Title ", comicController.sortBy))
 
     })
-      .fail(function (obj,code) {
-        console.log("API Call Failed!");
-      })
+        .fail(function (obj, code) {
+          console.log("API Call Failed!");
+        })
   }
 
 
